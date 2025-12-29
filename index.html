@@ -1,0 +1,53 @@
+<html>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+    }
+
+    canvas {
+        display: block;
+        width: inherit;
+        height: inherit;
+    }
+</style>
+
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <script> const canvas = document.getElementById("canvas");
+        const c = canvas.getContext('2d');
+        const draw = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            // main background 
+            c.fillStyle = "#a96846";
+            c.fillRect(0, 0, 2000, 1000);
+
+            // game window 
+            const GAMEWINDOWWIDTH = 1000;
+            const GAMEWINDOWHEIGHT = 625;
+            const gameWindowX = (canvas.width - GAMEWINDOWWIDTH) / 2;
+            const gameWindowY = (canvas.height - GAMEWINDOWHEIGHT) / 2;
+            c.fillStyle = "#f2b57b";
+            c.beginPath();
+            c.rect(gameWindowX, gameWindowY, GAMEWINDOWWIDTH, GAMEWINDOWHEIGHT); c.fill();
+
+            // border 
+            c.strokeStyle = "#591e27";
+            c.lineWidth = 7; c.stroke();
+        };
+
+        draw();
+        window.addEventListener('resize', draw); 
+    </script>
+</body>
+
+</html>
