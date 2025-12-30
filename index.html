@@ -15,38 +15,157 @@
         display: block;
         width: inherit;
         height: inherit;
+		position: absolute;
+        top: 0;
+        left: 0;
     }
+	
+	#backgroundCanvas {
+		z-index: 1;
+	}
+	
+	#fragmentCanvas {
+		z-index: 2;
+	}
+
+	#playAreaCanvas {
+		z-index: 3;
+	}
+	#gameCanvas {
+		z-index: 4;
+	}
 </style>
 
 <body>
-    <canvas id="canvas"></canvas>
+    <canvas id="backgroundCanvas"></canvas>
+	<canvas id="fragmentCanvas"></canvas>
+	<canvas id="playAreaCanvas"></canvas>
+	<canvas id="gameCanvas"></canvas>
     
-    <script> const canvas = document.getElementById("canvas");
-        const c = canvas.getContext('2d');
-        const draw = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            // main background 
-            c.fillStyle = "#a96846";
-            c.fillRect(0, 0, 2000, 1000);
-
-            // game window 
-            const GAMEWINDOWWIDTH = 1000;
-            const GAMEWINDOWHEIGHT = 625;
-            const gameWindowX = (canvas.width - GAMEWINDOWWIDTH) / 2;
-            const gameWindowY = (canvas.height - GAMEWINDOWHEIGHT) / 2;
-            c.fillStyle = "#f2b57b";
-            c.beginPath();
-            c.rect(gameWindowX, gameWindowY, GAMEWINDOWWIDTH, GAMEWINDOWHEIGHT); c.fill();
-
-            // border 
-            c.strokeStyle = "#591e27";
-            c.lineWidth = 7; c.stroke();
+    <script> 
+		const backgroundCanvas = document.getElementById("backgroundCanvas");
+		const fragmentCanvas = document.getElementById("fragmentCanvas");
+		const playAreaCanvas = document.getElementById("playAreaCanvas");
+        const gameCanvas = document.getElementById("gameCanvas");
+        
+		const bgCtx = backgroundCanvas.getContext('2d');
+		const fragCtx = fragmentCanvas.getContext('2d');
+        const paCtx = playAreaCanvas.getContext('2d');
+        const gameCtx = gameCanvas.getContext('2d');
+		
+		// overwrite default canvas width/height (300/150) with actual width /height of screen view
+		const resizeCanvases = () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            [backgroundCanvas, fragmentCanvas, playAreaCanvas, gameCanvas].forEach(canvas => {
+                canvas.width = width;
+                canvas.height = height;
+            });
+            
+            // redraw static layers after resize
+            drawBackground();
+            drawPlayArea();
         };
-
-        draw();
-        window.addEventListener('resize', draw); 
+		
+		// CONSTANTS
+		const BORDERCOLOR = "#84b0c1";
+		
+		const drawBackground = () => {
+		
+            bgCtx.fillStyle = "#632a0d";
+            bgCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+        };
+		
+        const drawPlayArea = () => {
+            const PLAYAREAWINDOWWIDTH = playAreaCanvas.width * .55;
+            const PLAYAREAWINDOWHEIGHT = playAreaCanvas.height * .75;
+            const playAreaWindowX = (playAreaCanvas.width - PLAYAREAWINDOWWIDTH) / 2;
+            const playAreaWindowY = (playAreaCanvas.height - PLAYAREAWINDOWHEIGHT) / 2;
+            
+            // Clear UI canvas first
+            paCtx.clearRect(0, 0, playAreaCanvas.width, playAreaCanvas.height);
+            
+            // Play area background
+            paCtx.fillStyle = "#111111";
+            paCtx.fillRect(playAreaWindowX, playAreaWindowY, PLAYAREAWINDOWWIDTH, PLAYAREAWINDOWHEIGHT);
+            
+            // Draw all borders (this code stays the same but only runs once)
+            paCtx.lineWidth = 9;
+            paCtx.lineCap = "round";
+            paCtx.strokeStyle = BORDERCOLOR;
+            
+            // Top border
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX - 15, playAreaWindowY - 2);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 15, playAreaWindowY - 2);
+            paCtx.stroke();
+            
+            // Left border (top section)
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX - 2, playAreaWindowY - 15);
+            paCtx.lineTo(playAreaWindowX - 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
+            paCtx.stroke();
+            
+            // Right border (top section)
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY - 15);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
+            paCtx.stroke();
+            
+            // Center divider line
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX - 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7));
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7));
+            paCtx.stroke();
+            
+            // Bottom border
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX - 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 2);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 2);
+            paCtx.stroke();
+            
+            // Left border (bottom section)
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX - 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
+            paCtx.lineTo(playAreaWindowX - 2, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
+            paCtx.stroke();
+            
+            // Right border (bottom section)
+            paCtx.beginPath();
+            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
+            paCtx.stroke();
+        };
+		
+		class BackgroundFragment {
+			constructor(canvas) {
+			
+			}
+		};
+		
+		resizeCanvases();
+		
+		
+		
+		let y = 0;
+		const gamePlay = () => {
+			fragCtx.clearRect(0, 0, fragmentCanvas.width, fragmentCanvas.height);
+			
+			fragCtx.fillStyle = "#957652";
+			fragCtx.fillRect(500, y, 10, 20);
+			y+= 5;
+			
+			if (y > fragmentCanvas.height) {
+				y = -20;
+			};
+			
+			window.requestAnimationFrame(gamePlay)
+		};
+		
+		gamePlay();
+		
+        window.addEventListener('resize', resizeCanvases);
     </script>
 </body>
 
