@@ -15,156 +15,306 @@
         display: block;
         width: inherit;
         height: inherit;
-		position: absolute;
+        position: absolute;
         top: 0;
         left: 0;
     }
-	
-	#backgroundCanvas {
-		z-index: 1;
-	}
-	
-	#fragmentCanvas {
-		z-index: 2;
-	}
 
-	#playAreaCanvas {
-		z-index: 3;
-	}
-	#gameCanvas {
-		z-index: 4;
-	}
+    #backgroundCanvas {
+        z-index: 1;
+    }
+
+    #fragmentCanvas {
+        z-index: 2;
+    }
+
+    #playAreaCanvas {
+        z-index: 3;
+    }
+
+    #gameCanvas {
+        z-index: 4;
+    }
 </style>
 
 <body>
     <canvas id="backgroundCanvas"></canvas>
-	<canvas id="fragmentCanvas"></canvas>
-	<canvas id="playAreaCanvas"></canvas>
-	<canvas id="gameCanvas"></canvas>
-    
-    <script> 
-		const backgroundCanvas = document.getElementById("backgroundCanvas");
-		const fragmentCanvas = document.getElementById("fragmentCanvas");
-		const playAreaCanvas = document.getElementById("playAreaCanvas");
+    <canvas id="fragmentCanvas"></canvas>
+    <canvas id="playAreaCanvas"></canvas>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const backgroundCanvas = document.getElementById("backgroundCanvas");
+        const fragmentCanvas = document.getElementById("fragmentCanvas");
+        const playAreaCanvas = document.getElementById("playAreaCanvas");
         const gameCanvas = document.getElementById("gameCanvas");
-        
-		const bgCtx = backgroundCanvas.getContext('2d');
-		const fragCtx = fragmentCanvas.getContext('2d');
+
+        const bgCtx = backgroundCanvas.getContext('2d');
+        const fragCtx = fragmentCanvas.getContext('2d');
         const paCtx = playAreaCanvas.getContext('2d');
         const gameCtx = gameCanvas.getContext('2d');
-		
-		// overwrite default canvas width/height (300/150) with actual width /height of screen view
-		const resizeCanvases = () => {
+
+        // overwrite default canvas width/height (300/150) with actual width /height of screen view
+        const resizeCanvases = () => {
             const width = window.innerWidth;
             const height = window.innerHeight;
-            
+
             [backgroundCanvas, fragmentCanvas, playAreaCanvas, gameCanvas].forEach(canvas => {
                 canvas.width = width;
                 canvas.height = height;
             });
-            
+
             // redraw static layers after resize
             drawBackground();
             drawPlayArea();
+            // create fragments grid on background, after resize adjust too
+            initializeBackgroundFragmentsGrid();
         };
-		
-		// CONSTANTS
-		const BORDERCOLOR = "#84b0c1";
-		
-		const drawBackground = () => {
-		
-            bgCtx.fillStyle = "#632a0d";
+
+        // CONSTANTS
+        const BORDERCOLOR = "#5a979e";
+
+        const drawBackground = () => {
+
+            bgCtx.fillStyle = "#44201c";
             bgCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
         };
-		
+
         const drawPlayArea = () => {
             const PLAYAREAWINDOWWIDTH = playAreaCanvas.width * .55;
             const PLAYAREAWINDOWHEIGHT = playAreaCanvas.height * .75;
             const playAreaWindowX = (playAreaCanvas.width - PLAYAREAWINDOWWIDTH) / 2;
             const playAreaWindowY = (playAreaCanvas.height - PLAYAREAWINDOWHEIGHT) / 2;
-            
+
             // Clear UI canvas first
             paCtx.clearRect(0, 0, playAreaCanvas.width, playAreaCanvas.height);
-            
+
             // Play area background
             paCtx.fillStyle = "#111111";
             paCtx.fillRect(playAreaWindowX, playAreaWindowY, PLAYAREAWINDOWWIDTH, PLAYAREAWINDOWHEIGHT);
-            
+
             // Draw all borders (this code stays the same but only runs once)
             paCtx.lineWidth = 9;
             paCtx.lineCap = "round";
             paCtx.strokeStyle = BORDERCOLOR;
-            
+
             // Top border
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX - 15, playAreaWindowY - 2);
-            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 15, playAreaWindowY - 2);
+            paCtx.moveTo(playAreaWindowX - 15, playAreaWindowY - 6);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 15, playAreaWindowY - 6);
             paCtx.stroke();
-            
+
             // Left border (top section)
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX - 2, playAreaWindowY - 15);
-            paCtx.lineTo(playAreaWindowX - 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
+            paCtx.moveTo(playAreaWindowX - 6, playAreaWindowY - 15);
+            paCtx.lineTo(playAreaWindowX - 6, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
             paCtx.stroke();
-            
+
             // Right border (top section)
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY - 15);
-            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
+            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 6, playAreaWindowY - 15);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 6, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) - 15);
             paCtx.stroke();
-            
+
             // Center divider line
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX - 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7));
-            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7));
+            paCtx.moveTo(playAreaWindowX - 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 2);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 25, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 2);
             paCtx.stroke();
-            
+
             // Bottom border
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX - 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 2);
-            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 2);
+            paCtx.moveTo(playAreaWindowX - 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 6);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 13, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 6);
             paCtx.stroke();
-            
+
             // Left border (bottom section)
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX - 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
-            paCtx.lineTo(playAreaWindowX - 2, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
+            paCtx.moveTo(playAreaWindowX - 6, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
+            paCtx.lineTo(playAreaWindowX - 6, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
             paCtx.stroke();
-            
+
             // Right border (bottom section)
             paCtx.beginPath();
-            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
-            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 2, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
+            paCtx.moveTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 6, playAreaWindowY + (PLAYAREAWINDOWHEIGHT * .7) + 15);
+            paCtx.lineTo(playAreaWindowX + PLAYAREAWINDOWWIDTH + 6, playAreaWindowY + PLAYAREAWINDOWHEIGHT + 15);
             paCtx.stroke();
         };
-		
-		class BackgroundFragment {
-			constructor(canvas) {
-			
-			}
-		};
-		
-		resizeCanvases();
-		
-		
-		
-		let y = 0;
-		const gamePlay = () => {
-			fragCtx.clearRect(0, 0, fragmentCanvas.width, fragmentCanvas.height);
-			
-			fragCtx.fillStyle = "#957652";
-			fragCtx.fillRect(500, y, 10, 20);
-			y+= 5;
-			
-			if (y > fragmentCanvas.height) {
-				y = -20;
-			};
-			
-			window.requestAnimationFrame(gamePlay)
-		};
-		
-		gamePlay();
-		
+
+        const BACKGROUNDS_FRAGMENTS_CHARACTERS = ['#', '|', '/', '\\', '-', '_', '<', '>', '(', ')', '[', ']', '{', '}', 'v', '^', 'X', 'x', 'T', 'Y', '+', '*', '.', "'", '"', '~', '!', '?', '=', 'O', '0', '@', '$', '%', '&', ';', ':',];
+        const BACKGROUNDS_FRAGMENTS_CHARACTERS_COLORS = ['#724817', '#e2c7a1', '#db9269', '#9e2a2b', '#632a0d', '#cfb580'];
+        const backgroundFragmentsGrid = [];
+        const initializeBackgroundFragmentsGrid = () => {
+            backgroundFragmentsGrid.length = 0;
+
+            const numberOfXBlocks = Math.round(fragmentCanvas.width / 7);
+            const numberOfYBlocks = Math.round(fragmentCanvas.height / 10);
+
+            for (let y = 0; y < numberOfYBlocks; y++) {
+                const row = [];
+                for (let x = 0; x < numberOfXBlocks; x++) {
+                    const pixelX = x * 7;
+                    const pixelY = y * 10;
+
+                    const fragment = {
+                        x: pixelX,
+                        y: pixelY,
+                        width: 7,
+                        height: 10,
+                        character: BACKGROUNDS_FRAGMENTS_CHARACTERS[Math.floor(Math.random() * BACKGROUNDS_FRAGMENTS_CHARACTERS.length)],
+                        color: BACKGROUNDS_FRAGMENTS_CHARACTERS_COLORS[Math.floor(Math.random() * BACKGROUNDS_FRAGMENTS_CHARACTERS_COLORS.length)],
+                        active: Math.random() < .35,
+                        frameCounter: Math.round(Math.random() * 160)
+                    };
+
+                    row.push(fragment);
+                }
+
+                backgroundFragmentsGrid.push(row);
+            }
+        };
+
+        const animateBackgroundFragmentsGrid = () => {
+            fragCtx.clearRect(0, 0, fragmentCanvas.width, fragmentCanvas.height);
+
+            let activeCount = 0;
+            let totalCount = 0;
+
+            backgroundFragmentsGrid.forEach(row => {
+                row.forEach(fragment => {
+                    totalCount++;
+                    if (fragment.active) activeCount++;
+                });
+            });
+
+            const currentDensity = activeCount / totalCount;
+            const targetDensity = .35;
+
+            backgroundFragmentsGrid.forEach(row => {
+                row.forEach(fragment => {
+                    fragment.frameCounter++;
+
+                    if (fragment.frameCounter >= 160) {
+                        fragment.frameCounter = 0;
+
+                        if (fragment.active && currentDensity > targetDensity) {
+                            // We're above target, so increase chance of turning off
+                            if (Math.random() < 0.15) {
+                                fragment.active = false;
+                            }
+                        } else if (!fragment.active && currentDensity < targetDensity) {
+                            // We're below target, so increase chance of turning on
+                            if (Math.random() < 0.15) {
+                                fragment.active = true;
+                            }
+                        } else {
+                            // We're close to target, so allow small random changes
+                            if (Math.random() < 0.03) {
+                                fragment.active = !fragment.active;
+                            }
+                        }
+                    }
+
+                    if (fragment.active) {
+                        fragCtx.fillStyle = fragment.color;
+                        fragCtx.font = '10px monospace';
+                        fragCtx.textBaseline = 'hanging';
+                        fragCtx.fillText(fragment.character, fragment.x, fragment.y, 7);
+                    }
+                });
+            });
+
+            window.requestAnimationFrame(animateBackgroundFragmentsGrid);
+        };
+
+        resizeCanvases();
+        animateBackgroundFragmentsGrid();
+
+        const playAreaStartX = (gameCanvas.width - (gameCanvas.width * .55)) / 2;
+        const playAreaStartY = (gameCanvas.height - (gameCanvas.height * .75)) / 2;
+
+        const DROP_OF_WATER = {
+            x: 0,
+            y: 0,
+            width: 20,
+            height: 20,
+            gridSize: 20,
+            color: 'blue'
+        };
+
+        DROP_OF_WATER.x = playAreaStartX;
+        DROP_OF_WATER.y = playAreaStartY;
+
+        const keysPressed = {
+            ArrowUp: { down: false, processed: false },
+            ArrowDown: { down: false, processed: false },
+            ArrowLeft: { down: false, processed: false },
+            ArrowRight: { down: false, processed: false }
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.startsWith('Arrow')) {
+                e.preventDefault();
+
+                if (e.repeat) {
+                    return;
+                }
+
+                keysPressed[e.key].down = true;
+                keysPressed[e.key].processed = false;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key.startsWith('Arrow')) {
+
+                if (e.repeat) {
+                    return;
+                }
+
+                BACKGROUND_FRAGMENTS_SPEED = 160;
+                keysPressed[e.key].down = false;
+                keysPressed[e.key].processed = false;
+            }
+        });
+
+        let y = 0;
+        const gamePlay = () => {
+
+            gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            if (keysPressed.ArrowUp.down & !keysPressed.ArrowUp.processed) {
+                DROP_OF_WATER.y -= DROP_OF_WATER.gridSize;
+                keysPressed.ArrowUp.processed = true;
+            }
+            if (keysPressed.ArrowDown.down & !keysPressed.ArrowDown.processed) {
+                DROP_OF_WATER.y += DROP_OF_WATER.gridSize;
+                keysPressed.ArrowDown.processed = true;
+            }
+            if (keysPressed.ArrowLeft.down & !keysPressed.ArrowLeft.processed) {
+                DROP_OF_WATER.x -= DROP_OF_WATER.gridSize;
+                keysPressed.ArrowLeft.processed = true;
+            }
+            if (keysPressed.ArrowRight.down & !keysPressed.ArrowRight.processed) {
+                DROP_OF_WATER.x += DROP_OF_WATER.gridSize;
+                keysPressed.ArrowRight.processed = true;
+            }
+
+            const playAreaEndX = playAreaStartX + (gameCanvas.width * .55);
+            const playAreaEndY = playAreaStartY + ((gameCanvas.height * .75) * .7);
+
+            DROP_OF_WATER.x = Math.max(playAreaStartX, Math.min(DROP_OF_WATER.x, playAreaEndX - DROP_OF_WATER.width));
+            DROP_OF_WATER.y = Math.max(playAreaStartY, Math.min(DROP_OF_WATER.y, playAreaEndY - DROP_OF_WATER.height));
+
+            gameCtx.fillStyle = DROP_OF_WATER.color;
+            gameCtx.fillRect(DROP_OF_WATER.x, DROP_OF_WATER.y, DROP_OF_WATER.width, DROP_OF_WATER.height)
+
+
+            window.requestAnimationFrame(gamePlay);
+        };
+
+        gamePlay();
+
         window.addEventListener('resize', resizeCanvases);
     </script>
 </body>
